@@ -10,7 +10,7 @@ st.title("🎯 Dashboard Kepatuhan Pajak Daerah")
 with st.expander("📌 Panduan Penggunaan Dashboard", expanded=False):
     st.markdown("""
     **Format Excel yang Didukung:**
-    - Kolom wajib: `Nama OP`, `TMT`, `STATUS`, `Nm Unit`, 'Klasifikasi'
+    - Kolom wajib: `Nama OP`, `TMT`, `STATUS`, `Nm Unit`, `Klasifikasi`
     - Kolom pembayaran bulan bisa dalam format `Jan-24`, `01/2024`, atau `2024-01-01`
 
     **Langkah-langkah:**
