@@ -126,7 +126,7 @@ if uploaded_file:
             df_output = df_output[df_output["KLASIFIKASI"] == selected_klasifikasi]
         
         if selected_status != "Semua":
-            df_output = df_output[df_output["STATUS"] == selected_status]()
+            df_output = df_output[df_output["STATUS"] == selected_status]
 
         st.success("✅ Data berhasil diproses dan difilter!")
         st.dataframe(df_output.head(50), use_container_width=True)
