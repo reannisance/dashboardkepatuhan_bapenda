@@ -43,13 +43,23 @@ def normalisasi_kolom(df):
 def konversi_kolom_bulan(df):
     new_cols = []
     for col in df.columns:
-        try:
-            # coba ubah ke datetime dan ambil bulan (to_period)
-            dt = pd.to_datetime(col, errors='raise')
-            # ubah ke awal bulan (format bulanan)
-            dt_month = dt.to_period('M').to_timestamp()
-            new_cols.append(dt_month)
-        except:
+        col_str = str(col).strip()
+        dt = None
+        # Coba berbagai format umum
+        for fmt in ("%b-%y", "%m/%y", "%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y"):
+            try:
+                dt = pd.to_datetime(col_str, format=fmt)
+                break
+            except:
+                continue
+        if dt is None:
+            try:
+                dt = pd.to_datetime(col_str, errors="coerce")
+            except:
+                dt = None
+        if isinstance(dt, pd.Timestamp) and pd.notna(dt):
+            new_cols.append(dt.to_period("M").to_timestamp())
+        else:
             new_cols.append(col)
     df.columns = new_cols
     return df
