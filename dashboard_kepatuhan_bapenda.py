@@ -203,25 +203,31 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
-        st.subheader("🏛️ Rata-rata Kepatuhan per UPPPD")
+        st.subheader("📊 Jumlah WP Patuh / Kurang Patuh / Tidak Patuh per UPPPD")
         
-        if not df_output.empty and "Nm Unit" in df_output.columns and "Kepatuhan (%)" in df_output.columns:
-            kepatuhan_unit = (
-                df_output[["Nm Unit", "Kepatuhan (%)"]]
-                .groupby("Nm Unit", as_index=False)
-                .mean()
-                .sort_values("Kepatuhan (%)", ascending=False)
+        if not df_output.empty and "Klasifikasi Kepatuhan" in df_output.columns:
+            df_kepatuhan3 = df_output[
+                df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
+            ]
+        
+            data_kepatuhan3 = (
+                df_kepatuhan3
+                .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+                .size()
+                .reset_index(name="Jumlah")
             )
         
-            fig_bar = px.bar(
-                kepatuhan_unit,
+            fig_kepatuhan3 = px.bar(
+                data_kepatuhan3,
                 x="Nm Unit",
-                y="Kepatuhan (%)",
-                title="Rata-rata Kepatuhan per UPPPD",
-                text_auto=".1f",
-                labels={"Nm Unit": "Unit UPPPD", "Kepatuhan (%)": "Rata-rata Kepatuhan"},
+                y="Jumlah",
+                color="Klasifikasi Kepatuhan",
+                barmode="stack",
+                title="Jumlah WP per UPPPD berdasarkan Kategori Kepatuhan",
+                text_auto=True,
+                labels={"Nm Unit": "Unit UPPPD", "Jumlah": "Jumlah WP"}
             )
-            fig_bar.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig_bar, use_container_width=True)
+            fig_kepatuhan3.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig_kepatuhan3, use_container_width=True)
         else:
-            st.info("📭 Tidak ada data kepatuhan yang dapat ditampilkan per UPPPD.")
+            st.info("📭 Tidak ada data WP dengan klasifikasi kepatuhan yang tersedia.")
