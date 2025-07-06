@@ -202,3 +202,26 @@ if uploaded_file:
             .head(5)
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
+
+        st.subheader("🏛️ Rata-rata Kepatuhan per UPPPD")
+        
+        if not df_output.empty and "Nm Unit" in df_output.columns and "Kepatuhan (%)" in df_output.columns:
+            kepatuhan_unit = (
+                df_output[["Nm Unit", "Kepatuhan (%)"]]
+                .groupby("Nm Unit", as_index=False)
+                .mean()
+                .sort_values("Kepatuhan (%)", ascending=False)
+            )
+        
+            fig_bar = px.bar(
+                kepatuhan_unit,
+                x="Nm Unit",
+                y="Kepatuhan (%)",
+                title="Rata-rata Kepatuhan per UPPPD",
+                text_auto=".1f",
+                labels={"Nm Unit": "Unit UPPPD", "Kepatuhan (%)": "Rata-rata Kepatuhan"},
+            )
+            fig_bar.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig_bar, use_container_width=True)
+        else:
+            st.info("📭 Tidak ada data kepatuhan yang dapat ditampilkan per UPPPD.")
