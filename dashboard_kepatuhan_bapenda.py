@@ -217,6 +217,20 @@ if uploaded_file:
                 .reset_index(name="Jumlah")
             )
         
+            # Custom sort
+            data_kepatuhan3["Nm Unit"] = pd.Categorical(
+                data_kepatuhan3["Nm Unit"],
+                categories=data_kepatuhan3.groupby("Nm Unit")["Jumlah"].sum().sort_values(ascending=False).index,
+                ordered=True
+            )
+        
+            # Warna lembut
+            color_map = {
+                "Patuh": "#00BFC4",
+                "Kurang Patuh": "#FCD12A",
+                "Tidak Patuh": "#FF6B6B",
+            }
+        
             fig_kepatuhan3 = px.bar(
                 data_kepatuhan3,
                 x="Nm Unit",
@@ -225,9 +239,17 @@ if uploaded_file:
                 barmode="stack",
                 title="Jumlah WP per UPPPD berdasarkan Kategori Kepatuhan",
                 text_auto=True,
+                color_discrete_map=color_map,
                 labels={"Nm Unit": "Unit UPPPD", "Jumlah": "Jumlah WP"}
             )
-            fig_kepatuhan3.update_layout(xaxis_tickangle=-45)
+            fig_kepatuhan3.update_layout(
+                xaxis_tickangle=-35,
+                xaxis_title="UPPPD",
+                yaxis_title="Jumlah Wajib Pajak",
+                legend_title="Kategori",
+                height=600,
+                font=dict(size=13)
+            )
             st.plotly_chart(fig_kepatuhan3, use_container_width=True)
         else:
             st.info("📭 Tidak ada data WP dengan klasifikasi kepatuhan yang tersedia.")
