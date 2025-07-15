@@ -296,4 +296,4 @@ if uploaded_file:
         )
         st.plotly_chart(fig_bottom5, use_container_width=True)
         
-                st.plotly_chart(fig_all, use_container_width=True)
+        st.plotly_chart(fig_all, use_container_width=True)
