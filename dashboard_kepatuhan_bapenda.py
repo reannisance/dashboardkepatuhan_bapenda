@@ -205,6 +205,11 @@ if uploaded_file:
 
         st.subheader("🫧 Bubble Chart Jumlah WP per Klasifikasi dan UPPPD")
         
+        # Pastikan filter dulu
+        df_kepatuhan3 = df_output[
+            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
+        ]
+        
         # Hitung jumlah WP per klasifikasi & UPPPD
         df_bubble = (
             df_kepatuhan3
@@ -213,7 +218,7 @@ if uploaded_file:
             .reset_index(name="Jumlah")
         )
         
-        # Visualisasi
+        # Bubble chart
         fig_bubble = px.scatter(
             df_bubble,
             x="Klasifikasi Kepatuhan",
