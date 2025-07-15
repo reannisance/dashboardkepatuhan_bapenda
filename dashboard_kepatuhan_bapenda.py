@@ -203,6 +203,48 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
         
+        st.subheader("📊 Bar Chart Jumlah WP per UPPPD (Semua Klasifikasi)")
+        
+        df_kepatuhan_all = df_output[
+            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
+        ]
+        
+        df_all_bar = (
+            df_kepatuhan_all
+            .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+            .size()
+            .reset_index(name="Jumlah")
+        )
+        
+        total_per_unit = df_all_bar.groupby("Nm Unit")["Jumlah"].sum().sort_values(ascending=False)
+        df_all_bar["Nm Unit"] = pd.Categorical(df_all_bar["Nm Unit"], categories=total_per_unit.index, ordered=True)
+        
+        color_map = {
+            "Patuh": "#00BFC4",
+            "Kurang Patuh": "#FCD12A",
+            "Tidak Patuh": "#FF6B6B",
+        }
+        
+        fig_all = px.bar(
+            df_all_bar,
+            x="Nm Unit",
+            y="Jumlah",
+            color="Klasifikasi Kepatuhan",
+            barmode="stack",
+            color_discrete_map=color_map,
+            title="Jumlah WP Patuh/Kurang/Tidak Patuh per UPPPD",
+            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
+            text_auto=True
+        )
+        fig_all.update_layout(
+            xaxis_tickangle=-30,
+            height=600,
+            font=dict(size=12),
+            margin=dict(b=120)
+        )
+        st.plotly_chart(fig_all, use_container_width=True)
+
+        
         st.subheader("📊 Bar Chart Jumlah WP Patuh dan Tidak Patuh per UPPPD")
         
         # Data dasar
