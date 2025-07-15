@@ -202,10 +202,10 @@ if uploaded_file:
             .head(5)
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
-
+        
         st.subheader("🍭 Lollipop Chart Jumlah WP per UPPPD (Semua)")
         
-        # Hitung total jumlah WP patuh/k. patuh/tidak patuh per UPPPD
+        # Hitung jumlah WP untuk semua UPPPD
         df_lollipop = (
             df_output[df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])]
             .groupby("Nm Unit")
@@ -214,12 +214,11 @@ if uploaded_file:
             .sort_values("Jumlah WP", ascending=False)
         )
         
-        # Buat plot
         import plotly.graph_objects as go
         
         fig_lollipop = go.Figure()
         
-        # Garis horizontal (batang lollipop)
+        # Batang lollipop
         fig_lollipop.add_trace(go.Scatter(
             x=df_lollipop["Jumlah WP"],
             y=df_lollipop["Nm Unit"],
@@ -228,14 +227,14 @@ if uploaded_file:
             showlegend=False
         ))
         
-        # Titik lollipop
+        # Titik lollipop dengan label
         fig_lollipop.add_trace(go.Scatter(
             x=df_lollipop["Jumlah WP"],
             y=df_lollipop["Nm Unit"],
             mode='markers+text',
             marker=dict(size=10, color='mediumblue'),
             text=df_lollipop["Jumlah WP"],
-            textposition='right',
+            textposition='middle right',  # ✅ FIXED
             name='Jumlah WP'
         ))
         
@@ -243,7 +242,7 @@ if uploaded_file:
             title="Jumlah WP Patuh/Kurang/Tidak Patuh per UPPPD",
             xaxis_title="Jumlah WP",
             yaxis_title="UPPPD",
-            height=50 + 25 * len(df_lollipop),  # Tinggi menyesuaikan jumlah UPPPD
+            height=50 + 25 * len(df_lollipop),
             font=dict(size=12),
             margin=dict(l=100, r=20, t=60, b=20)
         )
