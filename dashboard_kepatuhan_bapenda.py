@@ -204,7 +204,7 @@ if uploaded_file:
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
     
-      st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
+        st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
             df_treemap = (
                 df_kepatuhan3
                 .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
