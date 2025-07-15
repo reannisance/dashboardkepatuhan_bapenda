@@ -203,22 +203,20 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
+    if 'df_output' in locals() and not df_output.empty:
         st.subheader("🫧 Bubble Chart Jumlah WP per Klasifikasi dan UPPPD")
-        
-        # Pastikan filter dulu
+    
         df_kepatuhan3 = df_output[
             df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
         ]
-        
-        # Hitung jumlah WP per klasifikasi & UPPPD
+    
         df_bubble = (
             df_kepatuhan3
             .groupby(["Klasifikasi Kepatuhan", "Nm Unit"])
             .size()
             .reset_index(name="Jumlah")
         )
-        
-        # Bubble chart
+    
         fig_bubble = px.scatter(
             df_bubble,
             x="Klasifikasi Kepatuhan",
@@ -231,13 +229,8 @@ if uploaded_file:
             labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
             height=700
         )
-        
-        fig_bubble.update_layout(
-            xaxis_title="Klasifikasi Kepatuhan",
-            yaxis_title="Nama UPPPD",
-            legend_title="Kategori",
-            font=dict(size=13)
-        )
-        
+    
         st.plotly_chart(fig_bubble, use_container_width=True)
+    else:
+        st.info("📭 Tidak ada data WP untuk ditampilkan dalam Bubble Chart.")
 
