@@ -203,35 +203,36 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
-        st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
+        st.subheader("🫧 Bubble Chart Jumlah WP per Klasifikasi dan UPPPD")
         
-        # Filter hanya WP yang punya klasifikasi kepatuhan
-        df_kepatuhan3 = df_output[
-            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
-        ]
-        
-        # Hitung jumlah WP per klasifikasi dan per unit
-        df_treemap = (
+        # Hitung jumlah WP per klasifikasi & UPPPD
+        df_bubble = (
             df_kepatuhan3
             .groupby(["Klasifikasi Kepatuhan", "Nm Unit"])
             .size()
             .reset_index(name="Jumlah")
         )
         
-        # Warnanya sama dengan bar chart
-        color_map = {
-            "Patuh": "#00BFC4",
-            "Kurang Patuh": "#FCD12A",
-            "Tidak Patuh": "#FF6B6B",
-        }
-        
-        # Buat treemap
-        fig_treemap = px.treemap(
-            df_treemap,
-            path=["Klasifikasi Kepatuhan", "Nm Unit"],
-            values="Jumlah",
+        # Visualisasi
+        fig_bubble = px.scatter(
+            df_bubble,
+            x="Klasifikasi Kepatuhan",
+            y="Nm Unit",
+            size="Jumlah",
             color="Klasifikasi Kepatuhan",
             color_discrete_map=color_map,
-            title="Treemap Kepatuhan WP di Seluruh UPPPD"
+            size_max=40,
+            title="Bubble Chart: Distribusi Jumlah WP per Klasifikasi dan UPPPD",
+            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
+            height=700
         )
-        st.plotly_chart(fig_treemap, use_container_width=True)
+        
+        fig_bubble.update_layout(
+            xaxis_title="Klasifikasi Kepatuhan",
+            yaxis_title="Nama UPPPD",
+            legend_title="Kategori",
+            font=dict(size=13)
+        )
+        
+        st.plotly_chart(fig_bubble, use_container_width=True)
+
