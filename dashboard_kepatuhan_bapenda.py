@@ -202,49 +202,40 @@ if uploaded_file:
             .head(5)
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
+
         
-        st.subheader("🍭 Lollipop Chart Jumlah WP per UPPPD (Semua)")
+        st.subheader("📊 Bar Chart Kepatuhan WP untuk Semua UPPPD")
         
-        # Hitung jumlah WP untuk semua UPPPD
-        df_lollipop = (
-            df_output[df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])]
-            .groupby("Nm Unit")
+        df_kepatuhan_all = df_output[
+            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
+        ]
+        
+        df_all_bar = (
+            df_kepatuhan_all
+            .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
             .size()
-            .reset_index(name="Jumlah WP")
-            .sort_values("Jumlah WP", ascending=False)
+            .reset_index(name="Jumlah")
         )
         
-        import plotly.graph_objects as go
+        # Agar tampil sesuai urutan total
+        total_per_unit = df_all_bar.groupby("Nm Unit")["Jumlah"].sum().sort_values(ascending=False)
+        df_all_bar["Nm Unit"] = pd.Categorical(df_all_bar["Nm Unit"], categories=total_per_unit.index, ordered=True)
         
-        fig_lollipop = go.Figure()
-        
-        # Batang lollipop
-        fig_lollipop.add_trace(go.Scatter(
-            x=df_lollipop["Jumlah WP"],
-            y=df_lollipop["Nm Unit"],
-            mode='lines',
-            line=dict(color='lightgray'),
-            showlegend=False
-        ))
-        
-        # Titik lollipop dengan label
-        fig_lollipop.add_trace(go.Scatter(
-            x=df_lollipop["Jumlah WP"],
-            y=df_lollipop["Nm Unit"],
-            mode='markers+text',
-            marker=dict(size=10, color='mediumblue'),
-            text=df_lollipop["Jumlah WP"],
-            textposition='middle right',  # ✅ FIXED
-            name='Jumlah WP'
-        ))
-        
-        fig_lollipop.update_layout(
+        fig_all = px.bar(
+            df_all_bar,
+            x="Nm Unit",
+            y="Jumlah",
+            color="Klasifikasi Kepatuhan",
+            barmode="stack",
+            color_discrete_map=color_map,
             title="Jumlah WP Patuh/Kurang/Tidak Patuh per UPPPD",
-            xaxis_title="Jumlah WP",
-            yaxis_title="UPPPD",
-            height=50 + 25 * len(df_lollipop),
-            font=dict(size=12),
-            margin=dict(l=100, r=20, t=60, b=20)
+            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
+            text_auto=True
         )
-        
-        st.plotly_chart(fig_lollipop, use_container_width=True)
+        fig_all.update_layout(
+            xaxis_tickangle=-30,
+            height=600,
+            font=dict(size=12),
+            margin=dict(b=120)
+        )
+        st.plotly_chart(fig_all, use_container_width=True)
