@@ -203,6 +203,12 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
+            # Definisikan color_map dulu!
+        color_map = {
+            "Patuh": "#00BFC4",
+            "Kurang Patuh": "#FCD12A",
+            "Tidak Patuh": "#FF6B6B",
+        }
     if 'df_output' in locals() and not df_output.empty:
         st.subheader("🫧 Bubble Chart Jumlah WP per Klasifikasi dan UPPPD")
     
