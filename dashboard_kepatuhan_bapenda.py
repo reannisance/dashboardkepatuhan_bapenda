@@ -203,68 +203,22 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
-        st.subheader("📊 Top & Bottom 5 UPPPD berdasarkan Jumlah WP (Patuh / Kurang Patuh / Tidak Patuh)")
-        
-        if not df_output.empty and "Klasifikasi Kepatuhan" in df_output.columns:
-            df_kepatuhan3 = df_output[
-                df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
-            ]
-        
-            # Jumlah per kategori
-            data_kepatuhan3 = (
+    
+      st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
+            df_treemap = (
                 df_kepatuhan3
                 .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
                 .size()
                 .reset_index(name="Jumlah")
             )
-        
-            # Total per UPPPD
-            total_wp_per_unit = (
-                data_kepatuhan3
-                .groupby("Nm Unit")["Jumlah"]
-                .sum()
-                .sort_values(ascending=False)
-            )
-        
-            # Ambil top & bottom 5
-            top5_unit = total_wp_per_unit.head(5)
-            bottom5_unit = total_wp_per_unit.tail(5)
-            combined_units = pd.concat([top5_unit, bottom5_unit]).index
-        
-            df_combined = data_kepatuhan3[data_kepatuhan3["Nm Unit"].isin(combined_units)]
-        
-            # Atur urutan tampil
-            df_combined["Nm Unit"] = pd.Categorical(
-                df_combined["Nm Unit"],
-                categories=combined_units,
-                ordered=True
-            )
-        
-            color_map = {
-                "Patuh": "#00BFC4",
-                "Kurang Patuh": "#FCD12A",
-                "Tidak Patuh": "#FF6B6B",
-            }
-        
-            fig_combined = px.bar(
-                df_combined,
-                x="Nm Unit",
-                y="Jumlah",
+            
+            fig_treemap = px.treemap(
+                df_treemap,
+                path=["Klasifikasi Kepatuhan", "Nm Unit"],
+                values="Jumlah",
                 color="Klasifikasi Kepatuhan",
-                barmode="stack",
-                title="Top & Bottom 5 UPPPD berdasarkan Jumlah WP (Klasifikasi Kepatuhan)",
-                text_auto=True,
                 color_discrete_map=color_map,
-                labels={"Nm Unit": "Unit UPPPD", "Jumlah": "Jumlah WP"}
+                title="Treemap Kepatuhan WP di Seluruh UPPPD"
             )
-            fig_combined.update_layout(
-                xaxis_tickangle=-30,
-                xaxis_title="UPPPD",
-                yaxis_title="Jumlah WP",
-                legend_title="Kategori",
-                height=500,
-                font=dict(size=13)
-            )
-            st.plotly_chart(fig_combined, use_container_width=True)
-        else:
-            st.info("📭 Tidak ada data WP dengan klasifikasi kepatuhan yang tersedia.")
+        st.plotly_chart(fig_treemap, use_container_width=True)
+
