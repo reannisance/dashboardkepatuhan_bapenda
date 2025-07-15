@@ -248,4 +248,3 @@ if uploaded_file:
         )
         
         st.plotly_chart(fig_lollipop, use_container_width=True)
-
