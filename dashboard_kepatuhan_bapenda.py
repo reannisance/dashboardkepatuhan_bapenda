@@ -203,40 +203,50 @@ if uploaded_file:
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
-            # Definisikan color_map dulu!
-        color_map = {
-            "Patuh": "#00BFC4",
-            "Kurang Patuh": "#FCD12A",
-            "Tidak Patuh": "#FF6B6B",
-        }
-    if 'df_output' in locals() and not df_output.empty:
-        st.subheader("🫧 Bubble Chart Jumlah WP per Klasifikasi dan UPPPD")
-    
-        df_kepatuhan3 = df_output[
-            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
-        ]
-    
-        df_bubble = (
-            df_kepatuhan3
-            .groupby(["Klasifikasi Kepatuhan", "Nm Unit"])
+        st.subheader("🍭 Lollipop Chart Jumlah WP per UPPPD (Semua)")
+        
+        # Hitung total jumlah WP patuh/k. patuh/tidak patuh per UPPPD
+        df_lollipop = (
+            df_output[df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])]
+            .groupby("Nm Unit")
             .size()
-            .reset_index(name="Jumlah")
+            .reset_index(name="Jumlah WP")
+            .sort_values("Jumlah WP", ascending=False)
         )
-    
-        fig_bubble = px.scatter(
-            df_bubble,
-            x="Klasifikasi Kepatuhan",
-            y="Nm Unit",
-            size="Jumlah",
-            color="Klasifikasi Kepatuhan",
-            color_discrete_map=color_map,
-            size_max=40,
-            title="Bubble Chart: Distribusi Jumlah WP per Klasifikasi dan UPPPD",
-            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
-            height=700
+        
+        # Buat plot
+        import plotly.graph_objects as go
+        
+        fig_lollipop = go.Figure()
+        
+        # Garis horizontal (batang lollipop)
+        fig_lollipop.add_trace(go.Scatter(
+            x=df_lollipop["Jumlah WP"],
+            y=df_lollipop["Nm Unit"],
+            mode='lines',
+            line=dict(color='lightgray'),
+            showlegend=False
+        ))
+        
+        # Titik lollipop
+        fig_lollipop.add_trace(go.Scatter(
+            x=df_lollipop["Jumlah WP"],
+            y=df_lollipop["Nm Unit"],
+            mode='markers+text',
+            marker=dict(size=10, color='mediumblue'),
+            text=df_lollipop["Jumlah WP"],
+            textposition='right',
+            name='Jumlah WP'
+        ))
+        
+        fig_lollipop.update_layout(
+            title="Jumlah WP Patuh/Kurang/Tidak Patuh per UPPPD",
+            xaxis_title="Jumlah WP",
+            yaxis_title="UPPPD",
+            height=50 + 25 * len(df_lollipop),  # Tinggi menyesuaikan jumlah UPPPD
+            font=dict(size=12),
+            margin=dict(l=100, r=20, t=60, b=20)
         )
-    
-        st.plotly_chart(fig_bubble, use_container_width=True)
-    else:
-        st.info("📭 Tidak ada data WP untuk ditampilkan dalam Bubble Chart.")
+        
+        st.plotly_chart(fig_lollipop, use_container_width=True)
 
