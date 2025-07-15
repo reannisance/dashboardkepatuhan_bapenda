@@ -204,13 +204,28 @@ if uploaded_file:
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
         st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
+        
+        # Filter hanya WP yang punya klasifikasi kepatuhan
+        df_kepatuhan3 = df_output[
+            df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
+        ]
+        
+        # Hitung jumlah WP per klasifikasi dan per unit
         df_treemap = (
             df_kepatuhan3
-            .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+            .groupby(["Klasifikasi Kepatuhan", "Nm Unit"])
             .size()
             .reset_index(name="Jumlah")
         )
         
+        # Warnanya sama dengan bar chart
+        color_map = {
+            "Patuh": "#00BFC4",
+            "Kurang Patuh": "#FCD12A",
+            "Tidak Patuh": "#FF6B6B",
+        }
+        
+        # Buat treemap
         fig_treemap = px.treemap(
             df_treemap,
             path=["Klasifikasi Kepatuhan", "Nm Unit"],
@@ -220,4 +235,3 @@ if uploaded_file:
             title="Treemap Kepatuhan WP di Seluruh UPPPD"
         )
         st.plotly_chart(fig_treemap, use_container_width=True)
-
