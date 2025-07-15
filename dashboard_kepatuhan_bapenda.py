@@ -202,98 +202,86 @@ if uploaded_file:
             .head(5)
         )
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
-
-
-        st.subheader("📊 Bar Chart Kepatuhan WP")
         
-        # Filter hanya WP yang punya klasifikasi kepatuhan valid
+        st.subheader("📊 Bar Chart Jumlah WP Patuh dan Tidak Patuh per UPPPD")
+        
+        # Data dasar
         df_kepatuhan_all = df_output[
             df_output["Klasifikasi Kepatuhan"].isin(["Patuh", "Kurang Patuh", "Tidak Patuh"])
         ]
         
-        # Hitung jumlah per UPPPD dan Klasifikasi
-        df_all_bar = (
-            df_kepatuhan_all
-            .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
-            .size()
-            .reset_index(name="Jumlah")
-        )
-        
-        # Total untuk urutan
-        total_per_unit = df_all_bar.groupby("Nm Unit")["Jumlah"].sum().sort_values(ascending=False)
-        df_all_bar["Nm Unit"] = pd.Categorical(df_all_bar["Nm Unit"], categories=total_per_unit.index, ordered=True)
-        
-        # Warna konsisten
         color_map = {
             "Patuh": "#00BFC4",
             "Kurang Patuh": "#FCD12A",
             "Tidak Patuh": "#FF6B6B",
         }
         
-        # --- Bar Chart Semua UPPPD ---
-        fig_all = px.bar(
-            df_all_bar,
-            x="Nm Unit",
-            y="Jumlah",
-            color="Klasifikasi Kepatuhan",
-            barmode="stack",
-            color_discrete_map=color_map,
-            title="Jumlah WP Patuh/Kurang/Tidak Patuh per UPPPD",
-            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
-            text_auto=True
+        # -----------------------
+        # ✅ Top 5 berdasarkan WP Patuh
+        # -----------------------
+        df_patuh = (
+            df_kepatuhan_all[df_kepatuhan_all["Klasifikasi Kepatuhan"] == "Patuh"]
+            .groupby("Nm Unit")
+            .size()
+            .reset_index(name="Jumlah WP")
+            .sort_values("Jumlah WP", ascending=False)
+            .head(5)
         )
-        fig_all.update_layout(
-            xaxis_tickangle=-30,
-            height=600,
-            font=dict(size=12),
-            margin=dict(b=120)
+        top5_unit = df_patuh["Nm Unit"]
+        
+        df_top5_bar = df_kepatuhan_all[df_kepatuhan_all["Nm Unit"].isin(top5_unit)]
+        
+        df_top5_grouped = (
+            df_top5_bar.groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+            .size()
+            .reset_index(name="Jumlah")
         )
-        st.plotly_chart(fig_all, use_container_width=True)
         
-        # --- Top 5 ---
-        st.subheader("🏅 Bar Chart Top 5 UPPPD berdasarkan Jumlah WP")
-        top5_unit = total_per_unit.head(5).index
-        df_top5_bar = df_all_bar[df_all_bar["Nm Unit"].isin(top5_unit)]
-        
+        st.subheader("🏅 Top 5 UPPPD dengan Jumlah WP Patuh Terbanyak")
         fig_top5 = px.bar(
-            df_top5_bar,
+            df_top5_grouped,
             x="Nm Unit",
             y="Jumlah",
             color="Klasifikasi Kepatuhan",
             barmode="stack",
             color_discrete_map=color_map,
-            title="Top 5 UPPPD",
-            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
-            text_auto=True
+            text_auto=True,
+            title="Top 5 UPPPD berdasarkan Jumlah WP Patuh"
         )
-        fig_top5.update_layout(
-            xaxis_tickangle=-20,
-            height=500,
-            font=dict(size=12)
-        )
+        fig_top5.update_layout(xaxis_tickangle=-20, height=500)
         st.plotly_chart(fig_top5, use_container_width=True)
         
-        # --- Bottom 5 ---
-        st.subheader("📉 Bar Chart Bottom 5 UPPPD berdasarkan Jumlah WP")
-        bottom5_unit = total_per_unit.tail(5).index
-        df_bottom5_bar = df_all_bar[df_all_bar["Nm Unit"].isin(bottom5_unit)]
+        # -----------------------
+        # ❌ Bottom 5 berdasarkan WP Tidak Patuh
+        # -----------------------
+        df_tp = (
+            df_kepatuhan_all[df_kepatuhan_all["Klasifikasi Kepatuhan"] == "Tidak Patuh"]
+            .groupby("Nm Unit")
+            .size()
+            .reset_index(name="Jumlah WP")
+            .sort_values("Jumlah WP", ascending=False)
+            .head(5)
+        )
+        bottom5_unit = df_tp["Nm Unit"]
         
+        df_bottom5_bar = df_kepatuhan_all[df_kepatuhan_all["Nm Unit"].isin(bottom5_unit)]
+        
+        df_bottom5_grouped = (
+            df_bottom5_bar.groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+            .size()
+            .reset_index(name="Jumlah")
+        )
+        
+        st.subheader("📉 Bottom 5 UPPPD dengan Jumlah WP Tidak Patuh Terbanyak")
         fig_bottom5 = px.bar(
-            df_bottom5_bar,
+            df_bottom5_grouped,
             x="Nm Unit",
             y="Jumlah",
             color="Klasifikasi Kepatuhan",
             barmode="stack",
             color_discrete_map=color_map,
-            title="Bottom 5 UPPPD",
-            labels={"Nm Unit": "UPPPD", "Jumlah": "Jumlah WP"},
-            text_auto=True
+            text_auto=True,
+            title="Bottom 5 UPPPD berdasarkan Jumlah WP Tidak Patuh"
         )
-        fig_bottom5.update_layout(
-            xaxis_tickangle=-20,
-            height=500,
-            font=dict(size=12)
-        )
+        fig_bottom5.update_layout(xaxis_tickangle=-20, height=500)
         st.plotly_chart(fig_bottom5, use_container_width=True)
-        
-        st.plotly_chart(fig_all, use_container_width=True)
