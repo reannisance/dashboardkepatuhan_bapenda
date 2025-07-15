@@ -204,19 +204,20 @@ if uploaded_file:
         st.dataframe(top_wp.style.format({"Total Pembayaran": "Rp{:,.0f}"}), use_container_width=True)
 
         st.subheader("🌐 Distribusi Jumlah WP Patuh / Tidak Patuh per UPPPD (Treemap)")
-           df_treemap = (
-                df_kepatuhan3
-                .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
-                .size()
-                .reset_index(name="Jumlah")
-         )
-            
-            fig_treemap = px.treemap(
-                df_treemap,
-                path=["Klasifikasi Kepatuhan", "Nm Unit"],
-                values="Jumlah",
-                color="Klasifikasi Kepatuhan",
-                color_discrete_map=color_map,
-                title="Treemap Kepatuhan WP di Seluruh UPPPD"
+        df_treemap = (
+            df_kepatuhan3
+            .groupby(["Nm Unit", "Klasifikasi Kepatuhan"])
+            .size()
+            .reset_index(name="Jumlah")
+        )
+        
+        fig_treemap = px.treemap(
+            df_treemap,
+            path=["Klasifikasi Kepatuhan", "Nm Unit"],
+            values="Jumlah",
+            color="Klasifikasi Kepatuhan",
+            color_discrete_map=color_map,
+            title="Treemap Kepatuhan WP di Seluruh UPPPD"
         )
         st.plotly_chart(fig_treemap, use_container_width=True)
+
